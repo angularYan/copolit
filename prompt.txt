@@ -1,0 +1,7 @@
+#codebase #terminalSelection - can you fix this error?
+
+
+@workspace /new can you scaffold some code in reactjs that takes a city as input and then outputs the weather for that city with unit tests
+
+
+@workspace how do i run this project?
