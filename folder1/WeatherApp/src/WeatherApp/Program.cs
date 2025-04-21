@@ -8,7 +8,7 @@ namespace WeatherApp
     {
         static async Task Main(string[] args)
         {
-            Console.Write("Enter the city name: ");
+            Console.Write("Enter the city name: test");
             string city = Console.ReadLine();
 
             WeatherService weatherService = new WeatherService();
