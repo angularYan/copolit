@@ -5,3 +5,5 @@
 
 
 @workspace how do i run this project?
+
+#codebase - can you refactor my code to use a public weather API that does not require an API key?

@@ -16,35 +16,45 @@ namespace WeatherApp.Services
 
         public async Task<WeatherInfo> GetWeatherAsync(string city)
         {
-            var apiKey = "YOUR_API_KEY"; // Replace with your actual API key
-            var url = $"https://api.openweathermap.org/data/2.5/weather?q={city}&appid={apiKey}&units=metric";
-
-            var response = await _httpClient.GetStringAsync(url);
-            var weatherData = JsonConvert.DeserializeObject<WeatherApiResponse>(response);
-
-            return new WeatherInfo
+            try
             {
-                City = weatherData.Name,
-                Temperature = weatherData.Main.Temp,
-                Condition = weatherData.Weather[0].Description
-            };
+                // Step 1: Get latitude and longitude for the city
+                var geocodingUrl = $"https://geocoding-api.open-meteo.com/v1/search?name={city}";
+                var geocodingResponse = await _httpClient.GetStringAsync(geocodingUrl);
+                dynamic geocodingData = JsonConvert.DeserializeObject(geocodingResponse);
+
+                if (geocodingData.results == null || geocodingData.results.Count == 0)
+                {
+                    throw new Exception("City not found");
+                }
+
+                var location = geocodingData.results[0];
+                double latitude = location.latitude;
+                double longitude = location.longitude;
+
+                // Step 2: Fetch weather data using latitude and longitude
+                var weatherUrl = $"https://api.open-meteo.com/v1/forecast?latitude={latitude}&longitude={longitude}&current_weather=true";
+                var weatherResponse = await _httpClient.GetStringAsync(weatherUrl);
+                dynamic weatherData = JsonConvert.DeserializeObject(weatherResponse);
+
+                return new WeatherInfo
+                {
+                    City = location.name,
+                    Temperature = weatherData.current_weather.temperature,
+                    Condition = $"Weather Code: {weatherData.current_weather.weathercode}" // Open-Meteo uses weather codes
+                };
+            }
+            catch
+            {
+                return null; // Return null if any error occurs
+            }
         }
     }
 
-    public class WeatherApiResponse
+    public class WeatherInfo
     {
-        public Main Main { get; set; }
-        public Weather[] Weather { get; set; }
-        public string Name { get; set; }
-    }
-
-    public class Main
-    {
-        public float Temp { get; set; }
-    }
-
-    public class Weather
-    {
-        public string Description { get; set; }
+        public string City { get; set; }
+        public float Temperature { get; set; }
+        public string Condition { get; set; }
     }
 }
